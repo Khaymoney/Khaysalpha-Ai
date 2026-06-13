@@ -9,7 +9,7 @@ import { Pool } from "pg";
 import busboy from "busboy";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const AI_KEY = process.env.GEMINI_API_KEY;
 const AI_BASE = "generativelanguage.googleapis.com";
 const CAPX_CONTRACT = "0x71fb1795b084ff2b65eabf51cad22bbefd42ed5f";
