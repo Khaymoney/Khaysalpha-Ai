@@ -1,0 +1,14 @@
+{
+  "name": "khaysalpha-ai",
+  "version": "1.0.0",
+  "description": "KhaysAlpha AI — Research Faster. Decide Smarter.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "pg": "*",
+    "busboy": "*"
+  }
+}
