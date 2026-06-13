@@ -14,6 +14,31 @@ const AI_KEY = process.env.GEMINI_API_KEY;
 const AI_BASE = "generativelanguage.googleapis.com";
 const CAPX_CONTRACT = "0x71fb1795b084ff2b65eabf51cad22bbefd42ed5f";
 
+// ─── Startup Validation ─────────────────────────────────────────────────────
+function validateEnvironment() {
+  const errors = [];
+  if (!process.env.GEMINI_API_KEY) {
+    errors.push("❌ GEMINI_API_KEY not set. AI responses will fail.");
+  }
+  if (!process.env.DATABASE_URL) {
+    errors.push("❌ DATABASE_URL not set. Database connection will fail.");
+  }
+  if (errors.length > 0) {
+    console.error("⚠️  Configuration Issues:");
+    errors.forEach(e => console.error("  " + e));
+    console.error("\n📝 To fix:");
+    console.error("  1. Create/edit .env file in project root");
+    console.error("  2. Add: GEMINI_API_KEY=your_key_from_ai.google.dev");
+    console.error("  3. Add: DATABASE_URL=postgresql://user:pass@host/db");
+    console.error("  4. Restart: npm start\n");
+  } else {
+    console.log("✅ Environment variables configured");
+    console.log(`   ✓ GEMINI_API_KEY: ${AI_KEY.substring(0, 10)}...`);
+    console.log(`   ✓ DATABASE_URL: Connected`);
+  }
+  return errors.length === 0;
+}
+
 // ─── Database ────────────────────────────────────────────────────────────────
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -95,6 +120,11 @@ Never refuse reasonable questions — handle mature topics with maturity and res
 You represent KhaysAlpha AI — Research Faster. Decide Smarter.`;
 
 function aiStream(messages, onChunk, onDone, onError) {
+  // Check if API key is configured
+  if (!AI_KEY) {
+    return onError(new Error("GEMINI_API_KEY not configured. Set it in .env file and restart the server."));
+  }
+
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
@@ -116,6 +146,28 @@ function aiStream(messages, onChunk, onDone, onError) {
   const req = https.request(options, (res) => {
     let buffer = "";
     let finished = false;
+
+    // Check for API errors
+    if (res.statusCode !== 200) {
+      let errorData = "";
+      res.on("data", (chunk) => errorData += chunk);
+      res.on("end", () => {
+        try {
+          const error = JSON.parse(errorData);
+          if (error.error?.message?.includes("API_KEY_INVALID")) {
+            onError(new Error("❌ Invalid GEMINI_API_KEY. Check your .env file at https://ai.google.dev/"));
+          } else if (error.error?.message?.includes("QUOTA")) {
+            onError(new Error("❌ API quota exceeded. Check https://ai.google.dev/"));
+          } else {
+            onError(new Error(`API Error: ${error.error?.message || errorData}`));
+          }
+        } catch {
+          onError(new Error(`API Error (${res.statusCode}): ${errorData.slice(0, 200)}`));
+        }
+      });
+      return;
+    }
+
     res.on("data", (chunk) => {
       buffer += chunk.toString();
       const lines = buffer.split("\n");
@@ -637,6 +689,13 @@ const server = http.createServer(async (req, res) => {
 // Pre-fetch CAPX ID on startup
 fetchCapxId().then(id => { if (id) console.log(`✅ CAPX ID resolved: ${id}`); else console.log("ℹ️  CAPX not found on CoinGecko yet"); });
 
+// Validate environment variables
+const envOk = validateEnvironment();
+
 initDB().then(() => {
+  if (!envOk) {
+    console.warn("\n⚠️  Server starting with missing configuration!");
+    console.warn("   AI responses will fail until GEMINI_API_KEY is set.\n");
+  }
   server.listen(PORT, "0.0.0.0", () => console.log(`🚀 KhaysAlpha AI running at http://0.0.0.0:${PORT}`));
 }).catch(console.error);

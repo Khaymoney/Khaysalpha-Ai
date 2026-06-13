@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KhaysAlpha AI — Research Faster. Decide Smarter.</title>
+  <meta name="description" content="KhaysAlpha AI — Your intelligent research and decision-making assistant."/>
+  <link rel="icon" href="/logo.png" type="image/png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+
+<!-- ── Auth Modal ──────────────────────────────────────────────────────────── -->
+<div id="authModal" class="auth-modal hidden">
+  <div class="auth-modal-backdrop" id="authBackdrop"></div>
+  <div class="auth-card">
+    <button class="auth-close-btn" id="authCloseBtn">✕</button>
+    <div class="auth-logo-wrap">
+      <img src="/logo.png" alt="KhaysAlpha AI" class="auth-logo"/>
+    </div>
+    <h1 class="auth-brand">KhaysAlpha AI</h1>
+    <p class="auth-tagline">Research Faster. Decide Smarter.</p>
+
+    <div id="loginForm">
+      <h2 class="auth-title">Welcome back</h2>
+      <form id="loginFormEl" onsubmit="return false">
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input type="email" id="loginEmail" class="auth-input" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input type="password" id="loginPassword" class="auth-input" placeholder="Your password" autocomplete="current-password"/>
+        </div>
+        <div id="loginError" class="auth-error hidden"></div>
+        <button id="loginBtn" type="submit" class="auth-btn">Sign In</button>
+      </form>
+      <p class="auth-switch">Don't have an account? <button id="showRegister" class="auth-link">Create one</button></p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <h2 class="auth-title">Create free account</h2>
+      <form id="registerFormEl" onsubmit="return false">
+        <div class="auth-field">
+          <label class="auth-label">Username</label>
+          <input type="text" id="regUsername" class="auth-input" placeholder="Choose a username" autocomplete="username"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input type="email" id="regEmail" class="auth-input" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input type="password" id="regPassword" class="auth-input" placeholder="At least 6 characters" autocomplete="new-password"/>
+        </div>
+        <div id="registerError" class="auth-error hidden"></div>
+        <button id="registerBtn" type="submit" class="auth-btn">Create Account</button>
+      </form>
+      <p class="auth-switch">Already have an account? <button id="showLogin" class="auth-link">Sign in</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- ── App ────────────────────────────────────────────────────────────────── -->
+<div id="app">
+  <!-- Sidebar (logged-in only) -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <img src="/logo.png" alt="KhaysAlpha AI" class="sidebar-logo"/>
+      <button id="closeSidebar" class="icon-btn sidebar-close" aria-label="Close">✕</button>
+    </div>
+    <button id="newChatBtn" class="new-chat-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Chat
+    </button>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-page="chat">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </a>
+      <a class="nav-item" data-page="market">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        Market Analysis
+      </a>
+      <a class="nav-item" data-page="image">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Image Studio
+      </a>
+      <a class="nav-item" data-page="history">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+      </a>
+    </nav>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-footer">
+      <div class="footer-user-info">
+        <div class="footer-avatar-wrap">
+          <div class="footer-avatar" id="sidebarAvatar"></div>
+        </div>
+        <div class="footer-user-text">
+          <p class="footer-name" id="sidebarUsername">—</p>
+          <p class="footer-sub" id="sidebarEmail">—</p>
+        </div>
+      </div>
+      <button id="logoutBtn" class="logout-btn" title="Sign Out">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <div id="overlay" class="overlay"></div>
+
+  <main id="main" class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="icon-btn menu-btn" aria-label="Menu">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <img src="/logo.png" alt="KhaysAlpha AI" class="topbar-logo"/>
+      <span class="topbar-title">KhaysAlpha AI</span>
+      <div style="flex:1"></div>
+      <!-- Guest: sign-in buttons -->
+      <div id="guestTopbarAuth" class="topbar-auth-guest">
+        <button id="topbarSignIn" class="topbar-signin-btn" onclick="showAuthModal('login')">Sign in</button>
+        <button id="topbarSignUp" class="topbar-signup-btn" onclick="showAuthModal('register')">Sign up</button>
+      </div>
+      <!-- Logged in: avatar + new chat -->
+      <div id="userTopbarAuth" class="topbar-auth-user hidden">
+        <button id="newChatTopBtn" class="icon-btn" title="New Chat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div id="topbarAvatar" class="topbar-avatar" title="Account"></div>
+      </div>
+    </header>
+
+    <!-- Chat Page -->
+    <div id="page-chat" class="page active">
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-area">
+        <div class="input-wrap">
+          <div id="attachPreview" class="attach-preview hidden"></div>
+          <div class="input-row">
+            <button id="attachBtn" class="input-icon-btn" title="Attach image">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none"/>
+            <textarea id="chatInput" placeholder="Message KhaysAlpha AI..." rows="1" class="chat-textarea"></textarea>
+            <button id="sendBtn" class="send-btn" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="input-disclaimer">KhaysAlpha AI may occasionally make mistakes. Verify important information.</p>
+      </div>
+    </div>
+
+    <!-- Market Page -->
+    <div id="page-market" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Market Analysis</h1>
+        <p class="page-subtitle">Live cryptocurrency prices &amp; market data</p>
+        <div class="market-controls">
+          <div class="search-bar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="marketSearch" placeholder="Search tokens..." class="search-input"/>
+          </div>
+          <button id="refreshMarket" class="btn-outline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="globalStats" class="global-stats"></div>
+      <div id="marketList" class="market-list"></div>
+    </div>
+
+    <!-- Image Studio Page -->
+    <div id="page-image" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Image Studio</h1>
+        <p class="page-subtitle">Create stunning visuals or analyze any photo</p>
+        <div class="tabs" id="imageTabs">
+          <button class="tab active" data-tab="gen">Generate</button>
+          <button class="tab" data-tab="analyze">Analyze</button>
+        </div>
+      </div>
+      <div id="tab-gen" class="tab-panel active">
+        <div class="image-studio">
+          <label class="field-label">Describe your image</label>
+          <textarea id="imagePrompt" class="prompt-textarea" placeholder="A majestic golden city at sunset with futuristic architecture..." rows="3"></textarea>
+          <div class="example-chips" id="exampleChips"></div>
+          <button id="generateBtn" class="btn-primary generate-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Generate Image
+          </button>
+          <div id="generatedResult" class="gen-result hidden"></div>
+        </div>
+      </div>
+      <div id="tab-analyze" class="tab-panel">
+        <div class="image-studio">
+          <div id="uploadZone" class="upload-zone">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p class="upload-text">Drop image here or click to browse</p>
+            <p class="upload-sub">PNG, JPG up to 20MB</p>
+            <input type="file" id="analyzeFileInput" accept="image/*" style="display:none"/>
+          </div>
+          <div id="uploadPreviewWrap" class="upload-preview-wrap hidden">
+            <img id="uploadPreviewImg" class="upload-preview" alt="Preview"/>
+            <button id="removeUpload" class="remove-upload">✕</button>
+          </div>
+          <input type="text" id="analyzePrompt" class="input-field" placeholder="What would you like to know about this image?" style="margin-top:12px"/>
+          <button id="analyzeBtn" class="btn-primary" style="margin-top:12px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze Image
+          </button>
+          <div id="analysisResult" class="analysis-result hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Page -->
+    <div id="page-history" class="page">
+      <div class="page-header">
+        <div class="page-header-row">
+          <div>
+            <h1 class="page-title">Chat History</h1>
+            <p class="page-subtitle" id="historyCount">Loading...</p>
+          </div>
+          <button id="historyNewChat" class="btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Chat
+          </button>
+        </div>
+        <div class="search-bar" style="margin-top:14px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="historySearch" placeholder="Search conversations..." class="search-input"/>
+        </div>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/app.js" type="module"></script>
+</body>
+</html>
